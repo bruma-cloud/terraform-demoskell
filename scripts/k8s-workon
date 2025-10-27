@@ -1,0 +1,23 @@
+#!/bin/bash
+
+function k8s-workon() {
+    local kube_config_file=$1
+    if [[ -z "$kube_config_file" ]]; then
+        echo "Usage: $0 <k8s-file>"
+        echo "Example: $0 config.yaml"
+    fi
+
+    export KUBECONFIG="${HOME}/.kube/${kube_config_file}.yaml"
+    kubectl cluster-info
+}
+
+_k8s_autocomplete() {
+  local cur configs
+  COMPREPLY=()
+  cur="${COMP_WORDS[COMP_CWORD]}"
+  mapfile -t configs < <(find ~/.kube -maxdepth 1 -name "*.yaml" -exec basename -s .yaml {} \; 2>/dev/null)
+  mapfile -t COMPREPLY < <(compgen -W "${configs[*]}" -- "$cur")
+}
+
+
+complete -F _k8s_autocomplete k8s-workon
